@@ -19,12 +19,32 @@ function createComponentData(name, data) {
 	};
 }
 
-function fetchComponents() {
+//to get a diff between old fetched repos and new repos
+function getDiffFromOldRepos(newRepos) {
+	if (typeof(newRepos) === 'object' && typeof(cachedResults) === 'object') {
+
+		//get an array of old repos name
+		var oldReposName = cachedResults.map(function(item) {
+			return item.name;
+		});
+
+		return newRepos.filter(function(item) {
+			return oldReposName.indexOf(item.name) < 0;
+		});
+	}
+}
+
+function fetchComponents(fetchNew) {
 	return Q.fcall(function () {
 		var deferred = Q.defer();
 		request.get(REGISTRY_URL, {json: true}, function(err, response, body) {
 			if (!err && response.statusCode === 200) {
-				deferred.resolve(body);
+				if (fetchNew === true) {
+					deferred.resolve(getDiffFromOldRepos(body));
+				} else {
+					deferred.resolve(body);
+				}
+
 			} else {
 				deferred.reject(new Error(err));
 			}
@@ -61,6 +81,9 @@ function fetchComponents() {
 					apiLimitExceeded = true;
 					deferred.resolve();
 				} else if (!err && response.statusCode === 200) {
+					if (fetchNew === true) {
+						cachedResults.push(createComponentData(el.name, body));
+					}
 					deferred.resolve(createComponentData(el.name, body));
 				} else {
 					if (response && response.statusCode === 404) {
@@ -86,11 +109,13 @@ function fetchComponents() {
 			return Q.all(cachedResults);
 		}
 
-		cachedResults = results;
+		if (fetchNew === false)
+			cachedResults = results;
 
 		console.log('Finished fetching data from Bower registry', '' + new Date());
-		return Q.all(results);
+		return Q.all(fetchNew === true ? cachedResults.concat(results) : results);
 	});
 }
 
 module.exports = fetchComponents;
+a

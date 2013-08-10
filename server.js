@@ -8,13 +8,15 @@ var componentListEntity;
 var entity;
 
 var HTTP_PORT = process.env.PORT || 8011;
-var UPDATE_INTERVAL_IN_MINUTES =  480;
+//interval for updating old repos
+var UPDATE_OLD_REPOS_INTERVAL_IN_DAYS =  7;
+//interval for fetching new repos
+var UPDATE_NEW_REPOS_INTERVAL_IN_MINUTES = 15;
 
-
-function getComponentListEntity() {
+function getComponentListEntity(fetchNew) {
 	var deferred = Q.defer();
 
-	fetchComponents().then(function (list) {
+	fetchComponents(fetchNew || false).then(function (list) {
 		console.log('Finished fetching data from GitHub', '' + new Date());
 
 		// TODO: Find a way for the promise not to return null so this isn't needed
@@ -73,6 +75,10 @@ connect()
 	.use(getComponentList)
 	.listen(HTTP_PORT);
 
-setInterval(getComponentListEntity, UPDATE_INTERVAL_IN_MINUTES * 1000 * 60);
+//interval for getting old repository every week
+setInterval(getComponentListEntity, UPDATE_OLD_REPOS_INTERVAL_IN_DAYS * 24 * 60 * 60);
+
+//interval for fetching new repos
+setInterval(function() { getComponentListEntity(true); }, UPDATE_NEW_REPOS_INTERVAL_IN_MINUTES * 60);
 
 console.log('Server running on port ' + HTTP_PORT);
