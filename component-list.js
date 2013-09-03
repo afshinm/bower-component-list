@@ -19,17 +19,18 @@ function createComponentData(name, data) {
 	};
 }
 
-//to get a diff between old fetched repos and new repos
-function getDiffFromOldRepos(newRepos) {
-	if (typeof(newRepos) === 'object' && typeof(cachedResults) === 'object') {
+// to get a diff between old fetched repos and new repos
+function getDiffFromExistingRepos(newRepos) {
 
-		//get an array of old repos name
-		var oldReposName = cachedResults.map(function(item) {
+	if (typeof newRepos === 'object' && typeof cachedResults === 'object') {
+
+		// get an array of old repos name
+		var existingReposName = cachedResults.map(function (item) {
 			return item.name;
 		});
 
-		return newRepos.filter(function(item) {
-			return oldReposName.indexOf(item.name) < 0;
+		return newRepos.filter(function (item) {
+			return existingReposName.indexOf(item.name) < 0;
 		});
 	}
 }
@@ -37,10 +38,10 @@ function getDiffFromOldRepos(newRepos) {
 function fetchComponents(fetchNew) {
 	return Q.fcall(function () {
 		var deferred = Q.defer();
-		request.get(REGISTRY_URL, {json: true}, function(err, response, body) {
+		request.get(REGISTRY_URL, {json: true}, function (err, response, body) {
 			if (!err && response.statusCode === 200) {
 				if (fetchNew === true) {
-					deferred.resolve(getDiffFromOldRepos(body));
+					deferred.resolve(getDiffFromExistingRepos(body));
 				} else {
 					deferred.resolve(body);
 				}
@@ -109,8 +110,9 @@ function fetchComponents(fetchNew) {
 			return Q.all(cachedResults);
 		}
 
-		if (fetchNew === false)
+		if (fetchNew === false) {
 			cachedResults = results;
+                }
 
 		console.log('Finished fetching data from Bower registry', '' + new Date());
 		return Q.all(fetchNew === true ? cachedResults.concat(results) : results);
@@ -118,4 +120,3 @@ function fetchComponents(fetchNew) {
 }
 
 module.exports = fetchComponents;
-a
