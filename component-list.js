@@ -26,11 +26,15 @@ function getDiffFromExistingRepos(newRepos) {
 
 		// get an array of old repos name
 		var existingReposName = cachedResults.map(function (item) {
-			return item.name;
+			if (typeof item != 'undefined') {
+				return item.name;
+			}
 		});
 
 		return newRepos.filter(function (item) {
-			return existingReposName.indexOf(item.name) < 0;
+			if (typeof item != 'undefined') {
+				return existingReposName.indexOf(item.name) < 0;
+			}
 		});
 	}
 }
