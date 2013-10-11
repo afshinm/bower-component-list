@@ -70,15 +70,16 @@ componentListEntity = getComponentListEntity();
 
 connect()
 	.use(connect.errorHandler())
-	.use(connect.timeout(20000))
+	.use(connect.timeout(60000))
 	.use(connect.logger('dev'))
+	.use(connect.compress())
 	.use(getComponentList)
 	.listen(HTTP_PORT);
 
 //interval for getting old repository every week
-setInterval(getComponentListEntity, UPDATE_OLD_REPOS_INTERVAL_IN_DAYS * 24 * 60 * 60);
+setInterval(getComponentListEntity, UPDATE_OLD_REPOS_INTERVAL_IN_DAYS * 24 * 60 * 60 * 1000);
 
 //interval for fetching new repos
-setInterval(function() { getComponentListEntity(true); }, UPDATE_NEW_REPOS_INTERVAL_IN_MINUTES * 60);
+setInterval(function() { getComponentListEntity(true); }, UPDATE_NEW_REPOS_INTERVAL_IN_MINUTES * 60 * 1000);
 
 console.log('Server running on port ' + HTTP_PORT);
